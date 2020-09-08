@@ -15,11 +15,11 @@ import (
 	"time"
 )
 
-type WebServiceURL string
+type webServiceURL string
 
 const (
-	TestURL WebServiceURL = "https://appapi2.test.bankid.com"
-	ProdURL WebServiceURL = "https://appapi2.bankid.com"
+	testURL webServiceURL = "https://appapi2.test.bankid.com"
+	prodURL webServiceURL = "https://appapi2.bankid.com"
 )
 
 type CertificateAuthority string
@@ -44,19 +44,22 @@ type Options struct {
 	Timeout int // Client timeout in seconds
 }
 
-type bankID struct {
+// BankID holds settings for this session
+type BankID struct {
 	client *http.Client
-	url    string
 	test   bool
+
+	// URL is the endpoint which we use to talk with BankID and can be replaced.
+	URL string
 }
 
 // New creates a new client
-func New(opts Options) (*bankID, error) {
+func New(opts Options) (*BankID, error) {
 	encodedCaCertificate := string(prodCertificate)
-	url := string(ProdURL)
+	url := string(prodURL)
 	if opts.Test {
 		encodedCaCertificate = string(testCertificate)
-		url = string(TestURL)
+		url = string(testURL)
 	}
 
 	key, leaf, err := pkcs12.Decode(opts.SSLCertificate, opts.Passphrase)
@@ -91,9 +94,9 @@ func New(opts Options) (*bankID, error) {
 		Timeout:   time.Second * time.Duration(opts.Timeout),
 	}
 
-	return &bankID{
+	return &BankID{
 		client: client,
-		url:    url,
+		URL:    url,
 		test:   opts.Test,
 	}, nil
 }
@@ -110,7 +113,7 @@ type authSignResponse struct {
 	QrStartSecret  string `json:"qrStartSecret"`
 }
 
-// Optional parameters that control the autentication process
+// Requirement is optional parameters that control the autentication process
 // Read more about these on https://www.bankid.com/assets/bankid/rp/bankid-relying-party-guidelines-v3.4.pdf
 // Chapter 14.5
 type Requirement struct {
@@ -141,13 +144,13 @@ type AuthOptions struct {
 
 // Auth initiates an authentication order. Use the collect method to query the status of the order. If the request is
 // successful the response includes orderRef, autoStartToken, qrStartToken and qrStartSecret.
-func (b *bankID) Auth(ctx context.Context, opts AuthOptions) (result authSignResponse, err error) {
+func (b *BankID) Auth(ctx context.Context, opts AuthOptions) (result authSignResponse, err error) {
 	body, err := json.Marshal(opts)
 	if err != nil {
 		return
 	}
 
-	req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("%s/rp/v5.1/auth", b.url), bytes.NewBuffer(body))
+	req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("%s/rp/v5.1/auth", b.URL), bytes.NewBuffer(body))
 	if err != nil {
 		return
 	}
@@ -202,13 +205,13 @@ type SignOptions struct {
 
 // Sign initiates an signing order. Use the collect method to query the status of the order. If the request is successful
 // the response includes orderRef, autoStartToken, qrStartToken and qrStartSecret.
-func (b *bankID) Sign(ctx context.Context, opts SignOptions) (result authSignResponse, err error) {
+func (b *BankID) Sign(ctx context.Context, opts SignOptions) (result authSignResponse, err error) {
 	body, err := json.Marshal(opts)
 	if err != nil {
 		return
 	}
 
-	req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("%s/rp/v5.1/sign", b.url), bytes.NewBuffer(body))
+	req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("%s/rp/v5.1/sign", b.URL), bytes.NewBuffer(body))
 	if err != nil {
 		return
 	}
@@ -332,13 +335,13 @@ type collectResponse struct {
 // Collect provides the result of a sign or auth order using the orderRef as reference. You should keep on calling
 // collect every two seconds as long as status indicates pending. You must abort if status indicates failed. The user
 // identity is returned when complete.
-func (b *bankID) Collect(ctx context.Context, opts CollectOptions) (result collectResponse, err error) {
+func (b *BankID) Collect(ctx context.Context, opts CollectOptions) (result collectResponse, err error) {
 	body, err := json.Marshal(opts)
 	if err != nil {
 		return
 	}
 
-	req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("%s/rp/v5.1/collect", b.url), bytes.NewBuffer(body))
+	req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("%s/rp/v5.1/collect", b.URL), bytes.NewBuffer(body))
 	if err != nil {
 		return
 	}
@@ -373,13 +376,13 @@ type CancelOptions struct {
 }
 
 // Cancel an ongoing sign or auth order. This is typically used if the user cancels the order in your service or app.
-func (b *bankID) Cancel(ctx context.Context, opts CancelOptions) error {
+func (b *BankID) Cancel(ctx context.Context, opts CancelOptions) error {
 	body, err := json.Marshal(opts)
 	if err != nil {
 		return err
 	}
 
-	req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("%s/rp/v5.1/cancel", b.url), bytes.NewBuffer(body))
+	req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("%s/rp/v5.1/cancel", b.URL), bytes.NewBuffer(body))
 	if err != nil {
 		return err
 	}

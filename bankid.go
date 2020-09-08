@@ -1,10 +1,14 @@
 package bankid
 
 import (
+	"bytes"
+	"context"
 	"crypto"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/base64"
+	"encoding/json"
+	"fmt"
 	"golang.org/x/crypto/pkcs12"
 	"net/http"
 	"time"
@@ -13,8 +17,8 @@ import (
 type WebServiceUrl string
 
 const (
-	TestUrl WebServiceUrl = "https://appapi2.test.bankid.com/rp/v5.1"
-	ProdUrl WebServiceUrl = "https://appapi2.bankid.com/rp/v5.1"
+	TestUrl WebServiceUrl = "https://appapi2.test.bankid.com"
+	ProdUrl WebServiceUrl = "https://appapi2.bankid.com"
 )
 
 type CertificateAuthority string
@@ -80,7 +84,110 @@ func New(opts Options) (*BankId, error) {
 
 	return &BankId{
 		client: client,
-		url: url,
-		test: opts.Test,
+		url:    url,
+		test:   opts.Test,
 	}, nil
+}
+
+type serviceError struct {
+	ErrorCode string `json:"errorCode"`
+	Details   string `json:"details"`
+}
+
+type AuthSignResponse struct {
+	OrderRef       string `json:"orderRef"`
+	AutoStartToken string `json:"autoStartToken"`
+	QrStartToken   string `json:"qrStartToken"`
+	QrStartSecret  string `json:"qrStartSecret"`
+}
+
+type Requirement struct {
+	CardReader             string `json:"cardReader,omitempty"`
+	CertificatePolicies    string `json:"certificatePolicies,omitempty"`
+	IssuerCn               string `json:"issuerCn,omitempty"`
+	AutoStartTokenRequired string `json:"autoStartTokenRequired,omitempty"`
+	AllowFingerprint       bool   `json:"allowFingerprint,omitempty"`
+	TokenStartRequired     bool   `json:"tokenStartRequired,omitempty"`
+}
+
+type AuthOptions struct {
+	PersonalNumber string      `json:"personalNumber,omitempty"`
+	EndUserIp      string      `json:"endUserIp"`
+	Requirement    Requirement `json:"requirement,omitempty"`
+}
+
+func (b *BankId) Auth(ctx context.Context, opts AuthOptions) (result AuthSignResponse, err error) {
+	body, err := json.Marshal(opts)
+	if err != nil {
+		return
+	}
+
+	req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("%s/rp/v5.1/auth", b.url), bytes.NewBuffer(body))
+	if err != nil {
+		return
+	}
+
+	req.Header.Add("Content-Type", "application/json")
+
+	resp, err := b.client.Do(req)
+	if err != nil {
+		return
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		var errCode serviceError
+		err = json.NewDecoder(resp.Body).Decode(&errCode)
+		if err != nil {
+			return
+		}
+
+		return result, fmt.Errorf("[%s] %s", errCode.ErrorCode, errCode.Details)
+	}
+
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	return
+}
+
+type SignOptions struct {
+	PersonalNumber     string       `json:"personalNumber,omitempty"`
+	EndUserIp          string       `json:"endUserIp"`
+	UserVisibleData    string       `json:"userVisibleData"`
+	UserNonVisibleData string       `json:"userNonVisibleData,omitempty"`
+	Requirement        *Requirement `json:"requirement,omitempty"`
+}
+
+func (b *BankId) Sign(ctx context.Context, opts SignOptions) (result AuthSignResponse, err error) {
+	body, err := json.Marshal(opts)
+	if err != nil {
+		return
+	}
+
+	req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("%s/rp/v5.1/sign", b.url), bytes.NewBuffer(body))
+	if err != nil {
+		return
+	}
+
+	req.Header.Add("Content-Type", "application/json")
+
+	resp, err := b.client.Do(req)
+	if err != nil {
+		return
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		var errCode serviceError
+		err = json.NewDecoder(resp.Body).Decode(&errCode)
+		if err != nil {
+			return
+		}
+
+		return result, fmt.Errorf("[%s] %s", errCode.ErrorCode, errCode.Details)
+	}
+
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	return
 }

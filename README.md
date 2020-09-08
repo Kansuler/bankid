@@ -1,0 +1,2 @@
+# bankid
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/c02f1d9552a4419aa221d31bbb864f7c)](https://app.codacy.com/manual/Kansuler/bankid?utm_source=github.com&utm_medium=referral&utm_content=Kansuler/bankid&utm_campaign=Badge_Grade_Dashboard)

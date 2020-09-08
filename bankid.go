@@ -239,11 +239,35 @@ const (
 	StartFailed HintCodeType = "startFailed"
 )
 
+type CompletionDataUserType struct {
+	PersonalNumber string `json:"personalNumber"`
+	Name           string `json:"name"`
+	GivenName      string `json:"givenName"`
+	Surname        string `json:"surname"`
+}
+
+type CompletionDataDeviceType struct {
+	IpAddress string `json:"ipAddress"`
+}
+
+type CompletionDataCertType struct {
+	NotBefore string `json:"notBefore"` // Unix epoch milliseconds
+	NotAfter  string `json:"notAfter"`  // Unix epoch milliseconds
+}
+
+type CompletionDataType struct {
+	User         CompletionDataUserType   `json:"user"`
+	Device       CompletionDataDeviceType `json:"device"`
+	Cert         CompletionDataCertType   `json:"cert"`
+	Signature    string                   `json:"signature"`
+	OcspResponse string                   `json:"ocsp_response"`
+}
+
 type CollectResponse struct {
-	OrderRef       string       `json:"orderRef"`
-	Status         string       `json:"status"`
-	HintCode       HintCodeType `json:"hintCode"`
-	CompletionData string       `json:"completionData"`
+	OrderRef       string             `json:"orderRef"`
+	Status         string             `json:"status"`
+	HintCode       HintCodeType       `json:"hintCode"`
+	CompletionData CompletionDataType `json:"completionData"`
 }
 
 func (b *BankId) Collect(ctx context.Context, opts CollectOptions) (result CollectResponse, err error) {

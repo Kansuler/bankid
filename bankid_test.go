@@ -94,7 +94,7 @@ func TestBankId_Sign(t *testing.T) {
 
 	response, err := b.Sign(context.Background(), bankid.SignOptions{
 		PersonalNumber:  fmt.Sprintf("19%02d%02d%02d%d", gofakeit.Number(0, 99), gofakeit.Number(1, 12), gofakeit.Number(1, 28), gofakeit.Number(1000, 9999)),
-		EndUserIp:       gofakeit.IPv4Address(),
+		EndUserIP:       gofakeit.IPv4Address(),
 		UserVisibleData: base64.StdEncoding.EncodeToString([]byte("Signing test user")),
 	})
 
@@ -123,7 +123,7 @@ func TestBankId_Collect(t *testing.T) {
 
 	response, err := b.Sign(context.Background(), bankid.SignOptions{
 		PersonalNumber:  fmt.Sprintf("19%02d%02d%02d%d", gofakeit.Number(0, 99), gofakeit.Number(1, 12), gofakeit.Number(1, 28), gofakeit.Number(1000, 9999)),
-		EndUserIp:       gofakeit.IPv4Address(),
+		EndUserIP:       gofakeit.IPv4Address(),
 		UserVisibleData: base64.StdEncoding.EncodeToString([]byte("Signing test user")),
 	})
 

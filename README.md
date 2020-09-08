@@ -4,6 +4,8 @@
 
 A package to simplify integrations against the authentication and signing service [BankID](https://www.bankid.com/).
 
+It is recommended to read through the [developer guide](https://www.bankid.com/assets/bankid/rp/bankid-relying-party-guidelines-v3.4.pdf) thoroughly to understand the the process, and what responses that can occur.
+
 ## Installation
 
 `go get github.com/Kansuler/bankid`

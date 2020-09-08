@@ -191,3 +191,91 @@ func (b *BankId) Sign(ctx context.Context, opts SignOptions) (result AuthSignRes
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	return
 }
+
+type CollectOptions struct {
+	OrderRef string `json:"orderRef"`
+}
+
+type HintCodeType string
+
+// These are possible, but not exclusive hint codes. You need to handle other codes as well
+const (
+	// The order is pending. The client has not yet received the order. The hintCode will later change to noClient,
+	// started or userSign.
+	OutstandingTransaction HintCodeType = "outstandingTransaction"
+
+	// The order is pending. The client has not yet received the order.
+	NoClient HintCodeType = "noClient"
+
+	// The order is pending. A client has been started with the autostarttoken but a usable ID has not yet been found
+	// in the started client. When the client starts there may be a short delay until all ID:s are registered.
+	// The user may not have any usable ID:s at all, or has not yet inserted their smart card
+	Started HintCodeType = "started"
+
+	// The order is pending. The client has received the order.
+	UserSign HintCodeType = "userSign"
+
+	// The order has expired. The BankID security app/program did not start, the user did not finalize the signing or
+	// the RP called collect too late.
+	ExpiredTransaction HintCodeType = "expiredTransaction"
+
+	// This error is returned if:
+	// 1) The user has entered wrong security code too many times. The BankID cannot be used.
+	// 2) The users BankID is revoked.
+	// 3) The users BankID is invalid.
+	CertificateErr HintCodeType = "certificateErr"
+
+	// The user decided to cancel the order.
+	UserCancel HintCodeType = "userCancel"
+
+	// The order was cancelled. The system received a new order for the user.
+	Cancelled HintCodeType = "cancelled"
+
+	// The user did not provide her ID, or the RP requires autoStartToken to be used, but the client did not start
+	// within a certain time limit. The reason may be:
+	// 1) RP did not use autoStartToken when starting BankID security program/app. RP must correct this in their
+	// implementation.
+	// 2) The client software was not installed or other problem with the user’s computer.
+	StartFailed HintCodeType = "startFailed"
+)
+
+type CollectResponse struct {
+	OrderRef       string       `json:"orderRef"`
+	Status         string       `json:"status"`
+	HintCode       HintCodeType `json:"hintCode"`
+	CompletionData string       `json:"completionData"`
+}
+
+func (b *BankId) Collect(ctx context.Context, opts CollectOptions) (result CollectResponse, err error) {
+	body, err := json.Marshal(opts)
+	if err != nil {
+		return
+	}
+
+	req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("%s/rp/v5.1/collect", b.url), bytes.NewBuffer(body))
+	if err != nil {
+		return
+	}
+
+	req.Header.Add("Content-Type", "application/json")
+
+	resp, err := b.client.Do(req)
+	if err != nil {
+		return
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		var errCode serviceError
+		err = json.NewDecoder(resp.Body).Decode(&errCode)
+		if err != nil {
+			return
+		}
+
+		return result, fmt.Errorf("[%s] %s", errCode.ErrorCode, errCode.Details)
+	}
+
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	return
+}

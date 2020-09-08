@@ -6,6 +6,8 @@ A package to simplify integrations against the authentication and signing servic
 
 It is recommended to read through the [developer guide](https://www.bankid.com/assets/bankid/rp/bankid-relying-party-guidelines-v3.4.pdf) thoroughly to understand the the process, and what responses that can occur.
 
+API and detailed documentation can be found at [https://godoc.org/github.com/Kansuler/bankid](https://godoc.org/github.com/Kansuler/bankid)
+
 ## Installation
 
 `go get github.com/Kansuler/bankid`

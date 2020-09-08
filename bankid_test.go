@@ -139,7 +139,43 @@ func TestBankId_Collect(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotEmpty(t, response2.OrderRef)
-	assert.Equal(t, "pending", response2.Status)
+	assert.Equal(t, bankid.Pending, response2.Status)
 	assert.NotEmpty(t, response2.HintCode)
 	assert.Empty(t, response2.CompletionData)
+}
+
+func TestBankId_Cancel(t *testing.T) {
+	cert, err := ioutil.ReadFile("testcert.p12")
+	if err != nil {
+		t.Fatalf("could not load test certificate: %s", err.Error())
+	}
+
+	b, err := bankid.New(bankid.Options{
+		Passphrase:     "qwerty123",
+		SSLCertificate: cert,
+		Test:           true,
+		Timeout:        5,
+	})
+
+	assert.NoError(t, err)
+	assert.NotNil(t, b)
+
+	response, err := b.Auth(context.Background(), bankid.AuthOptions{
+		EndUserIp: gofakeit.IPv4Address(),
+	})
+
+	assert.NoError(t, err)
+	assert.NotEmpty(t, response.OrderRef)
+
+	err = b.Cancel(context.Background(), bankid.CancelOptions{
+		OrderRef: response.OrderRef,
+	})
+
+	assert.NoError(t, err)
+
+	err = b.Cancel(context.Background(), bankid.CancelOptions{
+		OrderRef: response.OrderRef,
+	})
+
+	assert.Error(t, err)
 }

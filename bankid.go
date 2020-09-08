@@ -318,3 +318,41 @@ func (b *BankId) Collect(ctx context.Context, opts CollectOptions) (result Colle
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	return
 }
+
+type CancelOptions struct {
+	OrderRef string `json:"orderRef"`
+}
+
+// Cancels an ongoing sign or auth order. This is typically used if the user cancels the order in your service or app.
+func (b *BankId) Cancel(ctx context.Context, opts CancelOptions) error {
+	body, err := json.Marshal(opts)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("%s/rp/v5.1/cancel", b.url), bytes.NewBuffer(body))
+	if err != nil {
+		return err
+	}
+
+	req.Header.Add("Content-Type", "application/json")
+
+	resp, err := b.client.Do(req)
+	if err != nil {
+		return err
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		var errCode serviceError
+		err = json.NewDecoder(resp.Body).Decode(&errCode)
+		if err != nil {
+			return err
+		}
+
+		return fmt.Errorf("[%s] %s", errCode.ErrorCode, errCode.Details)
+	}
+
+	return nil
+}

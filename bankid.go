@@ -116,6 +116,8 @@ type AuthOptions struct {
 	Requirement    Requirement `json:"requirement,omitempty"`
 }
 
+// Initiates an authentication order. Use the collect method to query the status of the order. If the request is
+// successful the response includes orderRef, autoStartToken, qrStartToken and qrStartSecret.
 func (b *BankId) Auth(ctx context.Context, opts AuthOptions) (result AuthSignResponse, err error) {
 	body, err := json.Marshal(opts)
 	if err != nil {
@@ -158,6 +160,8 @@ type SignOptions struct {
 	Requirement        *Requirement `json:"requirement,omitempty"`
 }
 
+// Initiates an signing order. Use the collect method to query the status of the order. If the request is successful
+// the response includes orderRef, autoStartToken, qrStartToken and qrStartSecret.
 func (b *BankId) Sign(ctx context.Context, opts SignOptions) (result AuthSignResponse, err error) {
 	body, err := json.Marshal(opts)
 	if err != nil {
@@ -195,6 +199,14 @@ func (b *BankId) Sign(ctx context.Context, opts SignOptions) (result AuthSignRes
 type CollectOptions struct {
 	OrderRef string `json:"orderRef"`
 }
+
+type StatusType string
+
+const (
+	Pending  StatusType = "pending"
+	Failed   StatusType = "failed"
+	Complete StatusType = "complete"
+)
 
 type HintCodeType string
 
@@ -265,11 +277,14 @@ type CompletionDataType struct {
 
 type CollectResponse struct {
 	OrderRef       string             `json:"orderRef"`
-	Status         string             `json:"status"`
+	Status         StatusType         `json:"status"` // pending, failed, complete
 	HintCode       HintCodeType       `json:"hintCode"`
 	CompletionData CompletionDataType `json:"completionData"`
 }
 
+// Collects the result of a sign or auth order using the orderRef as reference. You should keep on calling collect
+// every two seconds as long as status indicates pending. You must abort if status indicates failed. The user
+// identity is returned when complete.
 func (b *BankId) Collect(ctx context.Context, opts CollectOptions) (result CollectResponse, err error) {
 	body, err := json.Marshal(opts)
 	if err != nil {

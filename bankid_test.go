@@ -181,6 +181,7 @@ func TestBankId_Cancel(t *testing.T) {
 }
 
 func TestQr(t *testing.T) {
-	_, err := bankid.Qr("c15f3d1d-a209-4c64-89fe-c54209f55146", "43025f26-7cf3-415b-9c66-50835ee8deb4", 0)
+	str, err := bankid.Qr("c15f3d1d-a209-4c64-89fe-c54209f55146", "43025f26-7cf3-415b-9c66-50835ee8deb4", 0)
 	assert.NoError(t, err)
+	assert.NotEmpty(t, str)
 }

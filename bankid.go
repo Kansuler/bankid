@@ -415,10 +415,10 @@ func (b *BankID) Cancel(ctx context.Context, opts CancelOptions) error {
 // Qr is a helper function that generates a string that is transformed into a QR code. It takes startToken, startSecret
 // and seconds since the auth order was created.
 func Qr(startToken, startSecret string, seconds int64) (string, error) {
-	hash := hmac.New(sha256.New, []byte(fmt.Sprintf("%s, %d", startSecret, seconds)))
-	var authCode []byte
-	if _, err := hash.Write(authCode); err != nil {
+	hash := hmac.New(sha256.New, []byte(startSecret))
+	_, err := hash.Write([]byte(fmt.Sprintf("%d", seconds)))
+	if err != nil {
 		return "", err
 	}
-	return fmt.Sprintf("bankid.%s.%d.%s", startToken, seconds, hex.EncodeToString(authCode)), nil
+	return fmt.Sprintf("bankid.%s.%d.%s", startToken, seconds, hex.EncodeToString(hash.Sum(nil))), nil
 }

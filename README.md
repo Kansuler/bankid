@@ -29,6 +29,9 @@ New(opts Options) (*bankID, error)
 
 // cancel current pending order
 (b *bankID) Cancel(ctx context.Context, opts CancelOptions) error
+
+// generate hashed string for animated qr code
+Qr(startToken, startSecret string, seconds int64) (string, error)
 ```
 
 ## Usage

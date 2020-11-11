@@ -5,9 +5,12 @@ import (
 	"bytes"
 	"context"
 	"crypto"
+	"crypto/hmac"
+	"crypto/sha256"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"golang.org/x/crypto/pkcs12"
@@ -412,4 +415,15 @@ func (b *BankID) Cancel(ctx context.Context, opts CancelOptions) error {
 	}
 
 	return nil
+}
+
+// Qr is a helper function that generates a string that is transformed into a QR code. It takes startToken, startSecret
+// and seconds since the auth order was created. The QR Code need to be updated every second.
+func Qr(startToken, startSecret string, seconds int64) (string, error) {
+	hash := hmac.New(sha256.New, []byte(startSecret))
+	_, err := hash.Write([]byte(fmt.Sprintf("%d", seconds)))
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("bankid.%s.%d.%s", startToken, seconds, hex.EncodeToString(hash.Sum(nil))), nil
 }

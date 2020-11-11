@@ -199,6 +199,11 @@ type SignOptions struct {
 	// base 64-encoding.
 	UserNonVisibleData string `json:"userNonVisibleData,omitempty"`
 
+	// Optional: If present, and set to “simpleMarkdownV1”, this parameter indicates that userVisibleData holds
+	// formatting characters which, if used correctly, will make the text displayed with the user nicer to look at. For
+	// further information of formatting options, please study the document Guidelines for Formatted Text
+	UserVisibleDataFormat string `json:"userVisibleDataFormat,omitempty"`
+
 	// Optional: Requirements on how the sign order must be performed
 	Requirement *Requirement `json:"requirement,omitempty"`
 }

@@ -48,9 +48,10 @@ b, err := bankid.New(bankid.Options{
 })
     
 response, err := b.Sign(ctx, bankid.SignOptions{
-    PersonalNumber:  "190000000000",
-    EndUserIP:       "192.168.0.2",
-    UserVisibleData: base64.StdEncoding.EncodeToString([]byte("Signing test user")),
+    PersonalNumber:         "190000000000",
+    EndUserIP:              "192.168.0.2",
+    UserVisibleData:        base64.StdEncoding.EncodeToString([]byte("Signing test user")),
+    UserVisibleDataFormat:  "simpleMarkdownV1",
 })
 
 if err != nil {

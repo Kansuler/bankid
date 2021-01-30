@@ -330,7 +330,7 @@ type completionDataType struct {
 	Device       completionDataDeviceType `json:"device"`
 	Cert         completionDataCertType   `json:"cert"`
 	Signature    string                   `json:"signature"`
-	OcspResponse string                   `json:"ocsp_response"`
+	OcspResponse string                   `json:"ocspResponse"`
 }
 
 type collectResponse struct {

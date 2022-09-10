@@ -7,12 +7,12 @@ import (
 	"github.com/Kansuler/bankid"
 	"github.com/brianvoe/gofakeit"
 	"github.com/stretchr/testify/assert"
-	"io/ioutil"
+	"os"
 	"testing"
 )
 
 func TestNew(t *testing.T) {
-	cert, err := ioutil.ReadFile("testcert.p12")
+	cert, err := os.ReadFile("testcert.p12")
 	if err != nil {
 		t.Fatalf("could not load test certificate: %s", err.Error())
 	}
@@ -39,7 +39,7 @@ func TestNew(t *testing.T) {
 }
 
 func TestBankId_Auth(t *testing.T) {
-	cert, err := ioutil.ReadFile("testcert.p12")
+	cert, err := os.ReadFile("testcert.p12")
 	if err != nil {
 		t.Fatalf("could not load test certificate: %s", err.Error())
 	}
@@ -77,7 +77,7 @@ func TestBankId_Auth(t *testing.T) {
 }
 
 func TestBankId_Sign(t *testing.T) {
-	cert, err := ioutil.ReadFile("testcert.p12")
+	cert, err := os.ReadFile("testcert.p12")
 	if err != nil {
 		t.Fatalf("could not load test certificate: %s", err.Error())
 	}
@@ -106,7 +106,7 @@ func TestBankId_Sign(t *testing.T) {
 }
 
 func TestBankId_Collect(t *testing.T) {
-	cert, err := ioutil.ReadFile("testcert.p12")
+	cert, err := os.ReadFile("testcert.p12")
 	if err != nil {
 		t.Fatalf("could not load test certificate: %s", err.Error())
 	}
@@ -145,7 +145,7 @@ func TestBankId_Collect(t *testing.T) {
 }
 
 func TestBankId_Cancel(t *testing.T) {
-	cert, err := ioutil.ReadFile("testcert.p12")
+	cert, err := os.ReadFile("testcert.p12")
 	if err != nil {
 		t.Fatalf("could not load test certificate: %s", err.Error())
 	}

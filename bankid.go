@@ -145,24 +145,22 @@ type AuthOptions struct {
 	Requirement Requirement `json:"requirement,omitempty"` // Optional settings for the authentication process
 }
 
-// Auth initiates an authentication order. Use the collect method to query the status of the order. If the request is
-// successful the response includes orderRef, autoStartToken, qrStartToken and qrStartSecret.
-func (b *BankID) Auth(ctx context.Context, opts AuthOptions) (result authSignResponse, err error) {
-	body, err := json.Marshal(opts)
+func (b *BankID) doHTTP(ctx context.Context, url string, postBody, result interface{}) error {
+	body, err := json.Marshal(postBody)
 	if err != nil {
-		return
+		return err
 	}
 
-	req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("%s/rp/v5.1/auth", b.URL), bytes.NewBuffer(body))
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(body))
 	if err != nil {
-		return
+		return err
 	}
 
 	req.Header.Add("Content-Type", "application/json")
 
 	resp, err := b.client.Do(req)
 	if err != nil {
-		return
+		return err
 	}
 
 	defer resp.Body.Close()
@@ -171,13 +169,21 @@ func (b *BankID) Auth(ctx context.Context, opts AuthOptions) (result authSignRes
 		var errCode serviceError
 		err = json.NewDecoder(resp.Body).Decode(&errCode)
 		if err != nil {
-			return
+			return err
 		}
 
-		return result, fmt.Errorf("[%s] %s", errCode.ErrorCode, errCode.Details)
+		return fmt.Errorf("[%s] %s", errCode.ErrorCode, errCode.Details)
 	}
+	if result != nil {
+		err = json.NewDecoder(resp.Body).Decode(result)
+	}
+	return err
+}
 
-	err = json.NewDecoder(resp.Body).Decode(&result)
+// Auth initiates an authentication order. Use the collect method to query the status of the order. If the request is
+// successful the response includes orderRef, autoStartToken, qrStartToken and qrStartSecret.
+func (b *BankID) Auth(ctx context.Context, opts AuthOptions) (result authSignResponse, err error) {
+	err = b.doHTTP(ctx, fmt.Sprintf("%s/rp/v5.1/auth", b.URL), opts, &result)
 	return
 }
 
@@ -214,36 +220,7 @@ type SignOptions struct {
 // Sign initiates an signing order. Use the collect method to query the status of the order. If the request is successful
 // the response includes orderRef, autoStartToken, qrStartToken and qrStartSecret.
 func (b *BankID) Sign(ctx context.Context, opts SignOptions) (result authSignResponse, err error) {
-	body, err := json.Marshal(opts)
-	if err != nil {
-		return
-	}
-
-	req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("%s/rp/v5.1/sign", b.URL), bytes.NewBuffer(body))
-	if err != nil {
-		return
-	}
-
-	req.Header.Add("Content-Type", "application/json")
-
-	resp, err := b.client.Do(req)
-	if err != nil {
-		return
-	}
-
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		var errCode serviceError
-		err = json.NewDecoder(resp.Body).Decode(&errCode)
-		if err != nil {
-			return
-		}
-
-		return result, fmt.Errorf("[%s] %s", errCode.ErrorCode, errCode.Details)
-	}
-
-	err = json.NewDecoder(resp.Body).Decode(&result)
+	err = b.doHTTP(ctx, fmt.Sprintf("%s/rp/v5.1/sign", b.URL), opts, &result)
 	return
 }
 
@@ -344,36 +321,7 @@ type collectResponse struct {
 // collect every two seconds as long as status indicates pending. You must abort if status indicates failed. The user
 // identity is returned when complete.
 func (b *BankID) Collect(ctx context.Context, opts CollectOptions) (result collectResponse, err error) {
-	body, err := json.Marshal(opts)
-	if err != nil {
-		return
-	}
-
-	req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("%s/rp/v5.1/collect", b.URL), bytes.NewBuffer(body))
-	if err != nil {
-		return
-	}
-
-	req.Header.Add("Content-Type", "application/json")
-
-	resp, err := b.client.Do(req)
-	if err != nil {
-		return
-	}
-
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		var errCode serviceError
-		err = json.NewDecoder(resp.Body).Decode(&errCode)
-		if err != nil {
-			return
-		}
-
-		return result, fmt.Errorf("[%s] %s", errCode.ErrorCode, errCode.Details)
-	}
-
-	err = json.NewDecoder(resp.Body).Decode(&result)
+	err = b.doHTTP(ctx, fmt.Sprintf("%s/rp/v5.1/collect", b.URL), opts, &result)
 	return
 }
 
@@ -385,36 +333,7 @@ type CancelOptions struct {
 
 // Cancel an ongoing sign or auth order. This is typically used if the user cancels the order in your service or app.
 func (b *BankID) Cancel(ctx context.Context, opts CancelOptions) error {
-	body, err := json.Marshal(opts)
-	if err != nil {
-		return err
-	}
-
-	req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("%s/rp/v5.1/cancel", b.URL), bytes.NewBuffer(body))
-	if err != nil {
-		return err
-	}
-
-	req.Header.Add("Content-Type", "application/json")
-
-	resp, err := b.client.Do(req)
-	if err != nil {
-		return err
-	}
-
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		var errCode serviceError
-		err = json.NewDecoder(resp.Body).Decode(&errCode)
-		if err != nil {
-			return err
-		}
-
-		return fmt.Errorf("[%s] %s", errCode.ErrorCode, errCode.Details)
-	}
-
-	return nil
+	return b.doHTTP(ctx, fmt.Sprintf("%s/rp/v5.1/cancel", b.URL), opts, nil)
 }
 
 // Qr is a helper function that generates a string that is transformed into a QR code. It takes startToken, startSecret

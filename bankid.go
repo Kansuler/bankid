@@ -88,7 +88,7 @@ func New(opts Options) (*BankID, error) {
 		TLSClientConfig: &tls.Config{
 			Certificates:       []tls.Certificate{cert},
 			RootCAs:            caCertPool,
-			InsecureSkipVerify: true,
+			InsecureSkipVerify: false,
 		},
 	}
 

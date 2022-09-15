@@ -2,21 +2,19 @@ package bankid_test
 
 import (
 	"context"
+	_ "embed"
 	"encoding/base64"
 	"fmt"
 	"github.com/Kansuler/bankid"
 	"github.com/brianvoe/gofakeit"
 	"github.com/stretchr/testify/assert"
-	"io/ioutil"
 	"testing"
 )
 
-func TestNew(t *testing.T) {
-	cert, err := ioutil.ReadFile("testcert.p12")
-	if err != nil {
-		t.Fatalf("could not load test certificate: %s", err.Error())
-	}
+//go:embed testcert.p12
+var cert []byte
 
+func TestNew(t *testing.T) {
 	b, err := bankid.New(bankid.Options{
 		Passphrase:     "qwerty123",
 		SSLCertificate: cert,
@@ -39,11 +37,6 @@ func TestNew(t *testing.T) {
 }
 
 func TestBankId_Auth(t *testing.T) {
-	cert, err := ioutil.ReadFile("testcert.p12")
-	if err != nil {
-		t.Fatalf("could not load test certificate: %s", err.Error())
-	}
-
 	b, err := bankid.New(bankid.Options{
 		Passphrase:     "qwerty123",
 		SSLCertificate: cert,
@@ -77,11 +70,6 @@ func TestBankId_Auth(t *testing.T) {
 }
 
 func TestBankId_Sign(t *testing.T) {
-	cert, err := ioutil.ReadFile("testcert.p12")
-	if err != nil {
-		t.Fatalf("could not load test certificate: %s", err.Error())
-	}
-
 	b, err := bankid.New(bankid.Options{
 		Passphrase:     "qwerty123",
 		SSLCertificate: cert,
@@ -106,11 +94,6 @@ func TestBankId_Sign(t *testing.T) {
 }
 
 func TestBankId_Collect(t *testing.T) {
-	cert, err := ioutil.ReadFile("testcert.p12")
-	if err != nil {
-		t.Fatalf("could not load test certificate: %s", err.Error())
-	}
-
 	b, err := bankid.New(bankid.Options{
 		Passphrase:     "qwerty123",
 		SSLCertificate: cert,
@@ -145,11 +128,6 @@ func TestBankId_Collect(t *testing.T) {
 }
 
 func TestBankId_Cancel(t *testing.T) {
-	cert, err := ioutil.ReadFile("testcert.p12")
-	if err != nil {
-		t.Fatalf("could not load test certificate: %s", err.Error())
-	}
-
 	b, err := bankid.New(bankid.Options{
 		Passphrase:     "qwerty123",
 		SSLCertificate: cert,

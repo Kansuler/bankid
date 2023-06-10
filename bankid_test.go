@@ -11,14 +11,11 @@ import (
 	"testing"
 )
 
-//go:embed testcert.p12
-var cert []byte
-
 func TestNew(t *testing.T) {
 	b, err := bankid.New(bankid.Options{
 		Passphrase:           "qwerty123",
-		SSLCertificate:       cert,
-		CertificateAuthority: bankid.TestCertificate,
+		SSLCertificate:       bankid.TestSSLCertificate,
+		CertificateAuthority: bankid.TestCACertificate,
 		URL:                  bankid.TestURL,
 		Timeout:              5,
 	})
@@ -28,8 +25,8 @@ func TestNew(t *testing.T) {
 
 	b, err = bankid.New(bankid.Options{
 		Passphrase:           "321ytrewq",
-		SSLCertificate:       cert,
-		CertificateAuthority: bankid.TestCertificate,
+		SSLCertificate:       bankid.TestSSLCertificate,
+		CertificateAuthority: bankid.TestCACertificate,
 		URL:                  bankid.TestURL,
 		Timeout:              5,
 	})
@@ -41,8 +38,8 @@ func TestNew(t *testing.T) {
 func TestBankId_Auth(t *testing.T) {
 	b, err := bankid.New(bankid.Options{
 		Passphrase:           "qwerty123",
-		SSLCertificate:       cert,
-		CertificateAuthority: bankid.TestCertificate,
+		SSLCertificate:       bankid.TestSSLCertificate,
+		CertificateAuthority: bankid.TestCACertificate,
 		URL:                  bankid.TestURL,
 		Timeout:              5,
 	})
@@ -74,8 +71,8 @@ func TestBankId_Auth(t *testing.T) {
 func TestBankId_PhoneAuth(t *testing.T) {
 	b, err := bankid.New(bankid.Options{
 		Passphrase:           "qwerty123",
-		SSLCertificate:       cert,
-		CertificateAuthority: bankid.TestCertificate,
+		SSLCertificate:       bankid.TestSSLCertificate,
+		CertificateAuthority: bankid.TestCACertificate,
 		URL:                  bankid.TestURL,
 		Timeout:              5,
 	})
@@ -103,8 +100,8 @@ func TestBankId_PhoneAuth(t *testing.T) {
 func TestBankId_Sign(t *testing.T) {
 	b, err := bankid.New(bankid.Options{
 		Passphrase:           "qwerty123",
-		SSLCertificate:       cert,
-		CertificateAuthority: bankid.TestCertificate,
+		SSLCertificate:       bankid.TestSSLCertificate,
+		CertificateAuthority: bankid.TestCACertificate,
 		URL:                  bankid.TestURL,
 		Timeout:              5,
 	})
@@ -127,8 +124,8 @@ func TestBankId_Sign(t *testing.T) {
 func TestBankId_Collect(t *testing.T) {
 	b, err := bankid.New(bankid.Options{
 		Passphrase:           "qwerty123",
-		SSLCertificate:       cert,
-		CertificateAuthority: bankid.TestCertificate,
+		SSLCertificate:       bankid.TestSSLCertificate,
+		CertificateAuthority: bankid.TestCACertificate,
 		URL:                  bankid.TestURL,
 		Timeout:              5,
 	})
@@ -161,8 +158,8 @@ func TestBankId_Collect(t *testing.T) {
 func TestBankId_Cancel(t *testing.T) {
 	b, err := bankid.New(bankid.Options{
 		Passphrase:           "qwerty123",
-		SSLCertificate:       cert,
-		CertificateAuthority: bankid.TestCertificate,
+		SSLCertificate:       bankid.TestSSLCertificate,
+		CertificateAuthority: bankid.TestCACertificate,
 		URL:                  bankid.TestURL,
 		Timeout:              5,
 	})

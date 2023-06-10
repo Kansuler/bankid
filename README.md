@@ -41,11 +41,13 @@ Qr(startToken, startSecret string, seconds int64) (string, error)
 
 ```go
 ctx := context.Background()
+
+// For testing, you can use `bankid.TestSSLCertificate`
 cert, err := ioutil.ReadFile("/path/to/your/cert.p12")
 if err != nil {
 	return err
 }
-    
+
 b, err := bankid.New(bankid.Options{
     Passphrase:           "qwerty123",
     SSLCertificate:       cert,
@@ -53,7 +55,7 @@ b, err := bankid.New(bankid.Options{
     URL:                  bankid.TestURL,
     Timeout:              5,
 })
-    
+
 response, err := b.Sign(ctx, bankid.SignOptions{
     EndUserIP:              "192.168.0.2",
     UserVisibleData:        base64.StdEncoding.EncodeToString([]byte("Signing test user")),

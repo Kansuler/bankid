@@ -25,10 +25,13 @@ const (
 
 var (
 	//go:embed prod.ca.crt
-	ProdCertificate []byte
+	ProdCACertificate []byte
 
 	//go:embed test.ca.crt
-	TestCertificate []byte
+	TestCACertificate []byte
+
+	//go:embed testcert.p12
+	TestSSLCertificate []byte
 )
 
 // Options are settings that is used by the http client

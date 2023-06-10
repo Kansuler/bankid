@@ -16,20 +16,22 @@ var cert []byte
 
 func TestNew(t *testing.T) {
 	b, err := bankid.New(bankid.Options{
-		Passphrase:     "qwerty123",
-		SSLCertificate: cert,
-		Test:           true,
-		Timeout:        5,
+		Passphrase:           "qwerty123",
+		SSLCertificate:       cert,
+		CertificateAuthority: bankid.TestCertificate,
+		URL:                  bankid.TestURL,
+		Timeout:              5,
 	})
 
 	assert.NoError(t, err)
 	assert.NotNil(t, b)
 
 	b, err = bankid.New(bankid.Options{
-		Passphrase:     "321ytrewq",
-		SSLCertificate: cert,
-		Test:           true,
-		Timeout:        5,
+		Passphrase:           "321ytrewq",
+		SSLCertificate:       cert,
+		CertificateAuthority: bankid.TestCertificate,
+		URL:                  bankid.TestURL,
+		Timeout:              5,
 	})
 
 	assert.Error(t, err)
@@ -38,10 +40,11 @@ func TestNew(t *testing.T) {
 
 func TestBankId_Auth(t *testing.T) {
 	b, err := bankid.New(bankid.Options{
-		Passphrase:     "qwerty123",
-		SSLCertificate: cert,
-		Test:           true,
-		Timeout:        5,
+		Passphrase:           "qwerty123",
+		SSLCertificate:       cert,
+		CertificateAuthority: bankid.TestCertificate,
+		URL:                  bankid.TestURL,
+		Timeout:              5,
 	})
 
 	assert.NoError(t, err)
@@ -58,8 +61,7 @@ func TestBankId_Auth(t *testing.T) {
 	assert.NotEmpty(t, response.QrStartToken)
 
 	response, err = b.Auth(context.Background(), bankid.AuthOptions{
-		PersonalNumber: fmt.Sprintf("19%02d%02d%02d%d", gofakeit.Number(0, 99), gofakeit.Number(1, 12), gofakeit.Number(1, 28), gofakeit.Number(1000, 9999)),
-		EndUserIp:      gofakeit.IPv4Address(),
+		EndUserIp: gofakeit.IPv4Address(),
 	})
 
 	assert.NoError(t, err)
@@ -69,20 +71,49 @@ func TestBankId_Auth(t *testing.T) {
 	assert.NotEmpty(t, response.QrStartToken)
 }
 
+func TestBankId_PhoneAuth(t *testing.T) {
+	b, err := bankid.New(bankid.Options{
+		Passphrase:           "qwerty123",
+		SSLCertificate:       cert,
+		CertificateAuthority: bankid.TestCertificate,
+		URL:                  bankid.TestURL,
+		Timeout:              5,
+	})
+
+	assert.NoError(t, err)
+	assert.NotNil(t, b)
+
+	response, err := b.PhoneAuth(context.Background(), bankid.PhoneAuthOptions{
+		PersonalNumber: fmt.Sprintf("19%02d%02d%02d%d", gofakeit.Number(0, 99), gofakeit.Number(1, 12), gofakeit.Number(1, 28), gofakeit.Number(1000, 9999)),
+		CallInitiator:  "user",
+	})
+
+	assert.NoError(t, err)
+	assert.NotEmpty(t, response.OrderRef)
+
+	response2, err := b.Collect(context.Background(), bankid.CollectOptions{
+		OrderRef: response.OrderRef,
+	})
+
+	assert.NoError(t, err)
+	assert.NotEmpty(t, response2.OrderRef)
+	assert.NotEmpty(t, response2.Status)
+}
+
 func TestBankId_Sign(t *testing.T) {
 	b, err := bankid.New(bankid.Options{
-		Passphrase:     "qwerty123",
-		SSLCertificate: cert,
-		Test:           true,
-		Timeout:        5,
+		Passphrase:           "qwerty123",
+		SSLCertificate:       cert,
+		CertificateAuthority: bankid.TestCertificate,
+		URL:                  bankid.TestURL,
+		Timeout:              5,
 	})
 
 	assert.NoError(t, err)
 	assert.NotNil(t, b)
 
 	response, err := b.Sign(context.Background(), bankid.SignOptions{
-		PersonalNumber:  fmt.Sprintf("19%02d%02d%02d%d", gofakeit.Number(0, 99), gofakeit.Number(1, 12), gofakeit.Number(1, 28), gofakeit.Number(1000, 9999)),
-		EndUserIP:       gofakeit.IPv4Address(),
+		EndUserIp:       gofakeit.IPv4Address(),
 		UserVisibleData: base64.StdEncoding.EncodeToString([]byte("Signing test user")),
 	})
 
@@ -95,18 +126,18 @@ func TestBankId_Sign(t *testing.T) {
 
 func TestBankId_Collect(t *testing.T) {
 	b, err := bankid.New(bankid.Options{
-		Passphrase:     "qwerty123",
-		SSLCertificate: cert,
-		Test:           true,
-		Timeout:        5,
+		Passphrase:           "qwerty123",
+		SSLCertificate:       cert,
+		CertificateAuthority: bankid.TestCertificate,
+		URL:                  bankid.TestURL,
+		Timeout:              5,
 	})
 
 	assert.NoError(t, err)
 	assert.NotNil(t, b)
 
 	response, err := b.Sign(context.Background(), bankid.SignOptions{
-		PersonalNumber:  fmt.Sprintf("19%02d%02d%02d%d", gofakeit.Number(0, 99), gofakeit.Number(1, 12), gofakeit.Number(1, 28), gofakeit.Number(1000, 9999)),
-		EndUserIP:       gofakeit.IPv4Address(),
+		EndUserIp:       gofakeit.IPv4Address(),
 		UserVisibleData: base64.StdEncoding.EncodeToString([]byte("Signing test user")),
 	})
 
@@ -129,10 +160,11 @@ func TestBankId_Collect(t *testing.T) {
 
 func TestBankId_Cancel(t *testing.T) {
 	b, err := bankid.New(bankid.Options{
-		Passphrase:     "qwerty123",
-		SSLCertificate: cert,
-		Test:           true,
-		Timeout:        5,
+		Passphrase:           "qwerty123",
+		SSLCertificate:       cert,
+		CertificateAuthority: bankid.TestCertificate,
+		URL:                  bankid.TestURL,
+		Timeout:              5,
 	})
 
 	assert.NoError(t, err)

@@ -4,7 +4,7 @@
 
 A package to simplify integrations against the authentication and signing service [BankID](https://www.bankid.com/).
 
-It is recommended to read through the [developer guide](https://www.bankid.com/assets/bankid/rp/bankid-relying-party-guidelines-v3.4.pdf) thoroughly to understand the the process, and what responses that can occur.
+It is recommended to read through the [developer guide](https://www.bankid.com/utvecklare/guider/teknisk-integrationsguide/rp-introduktion) thoroughly to understand the the process, and what responses that can occur.
 
 API and detailed documentation can be found at [https://godoc.org/github.com/Kansuler/bankid](https://godoc.org/github.com/Kansuler/bankid)
 
@@ -20,6 +20,9 @@ New(opts Options) (*bankID, error)
 
 // authenticate user 
 (b *bankID) Auth(ctx context.Context, opts AuthOptions) (result authSignResponse, err error)
+
+// authenticate user over phone
+(b *BankID) PhoneAuth(ctx context.Context, opts PhoneAuthOptions) (result phoneAuthResponse, err error)
 
 // sign legal document
 (b *bankID) Sign(ctx context.Context, opts SignOptions) (result authSignResponse, err error)
@@ -44,19 +47,20 @@ if err != nil {
 }
     
 b, err := bankid.New(bankid.Options{
-    Passphrase:     "qwerty123",
-    SSLCertificate: cert,
-    Test:           true,
-    Timeout:        5,
+    Passphrase:           "qwerty123",
+    SSLCertificate:       cert,
+	CertificateAuthority: bankid.TestCertificate,
+    URL:                  bankid.TestURL,
+    Timeout:              5,
 })
     
 response, err := b.Sign(ctx, bankid.SignOptions{
-    PersonalNumber:         "190000000000",
     EndUserIP:              "192.168.0.2",
     UserVisibleData:        base64.StdEncoding.EncodeToString([]byte("Signing test user")),
     UserVisibleDataFormat:  "simpleMarkdownV1",
 })
 
+qr := bankid.Qr(response.QrStartToken, response.QrStartSecret, 0)
 if err != nil {
     return err
 }

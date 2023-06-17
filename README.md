@@ -1,6 +1,6 @@
 # Kansuler/bankid
 
-![License](https://img.shields.io/github/license/Kansuler/bankid) ![Version](https://img.shields.io/github/go-mod/go-version/Kansuler/bankid) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/cc405c0102b24c1a8abd15960732856a)](https://www.codacy.com/manual/Kansuler/bankid?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Kansuler/bankid&amp;utm_campaign=Badge_Grade)
+![License](https://img.shields.io/github/license/Kansuler/bankid) ![Version](https://img.shields.io/github/go-mod/go-version/Kansuler/bankid) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/03c7bae4e4284cf2977222b8843f312d)](https://app.codacy.com/gh/Kansuler/bankid/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 
 A package to simplify integrations against the authentication and signing service [BankID](https://www.bankid.com/).
 

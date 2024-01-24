@@ -161,7 +161,7 @@ type Requirement struct {
 	Mrtd                bool     `json:"mrtd,omitempty"`
 	CardReader          string   `json:"cardReader,omitempty"`
 	CertificatePolicies []string `json:"certificatePolicies,omitempty"`
-	PersonalNumber      string   `json:"personal_number,omitempty"`
+	PersonalNumber      string   `json:"personalNumber,omitempty"`
 }
 
 // AuthOptions for the authentication request

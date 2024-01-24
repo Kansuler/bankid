@@ -118,7 +118,7 @@ func (b *BankID) doHTTP(ctx context.Context, url string, postBody, result interf
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		var errCode serviceError
+		var errCode ServiceError
 		err = json.NewDecoder(resp.Body).Decode(&errCode)
 		if err != nil {
 			return err
@@ -134,22 +134,22 @@ func (b *BankID) doHTTP(ctx context.Context, url string, postBody, result interf
 	return err
 }
 
-// serviceError is the error response from the BankID Api
-type serviceError struct {
+// ServiceError is the error response from the BankID Api
+type ServiceError struct {
 	ErrorCode string `json:"errorCode"`
 	Details   string `json:"details"`
 }
 
-// authSignResponse is the response from the auth request
-type authSignResponse struct {
+// AuthSignResponse is the response from the auth request
+type AuthSignResponse struct {
 	OrderRef       string `json:"orderRef"`
 	AutoStartToken string `json:"autoStartToken"`
 	QrStartToken   string `json:"qrStartToken"`
 	QrStartSecret  string `json:"qrStartSecret"`
 }
 
-// phoneAuthResponse is the response from the phone auth request
-type phoneAuthResponse struct {
+// PhoneAuthResponse is the response from the phone auth request
+type PhoneAuthResponse struct {
 	OrderRef string `json:"orderRef"`
 }
 
@@ -195,7 +195,7 @@ type AuthOptions struct {
 
 // Auth initiates an authentication order. Use the collect method to query the status of the order. If the request is
 // successful the response includes orderRef, autoStartToken, qrStartToken and qrStartSecret.
-func (b *BankID) Auth(ctx context.Context, opts AuthOptions) (result authSignResponse, err error) {
+func (b *BankID) Auth(ctx context.Context, opts AuthOptions) (result AuthSignResponse, err error) {
 	err = b.doHTTP(ctx, fmt.Sprintf("%s/rp/v6.0/auth", b.url), opts, &result)
 	return
 }
@@ -230,7 +230,7 @@ type PhoneAuthOptions struct {
 
 // PhoneAuth initiates a phone authentication order. Use the collect method to query the status of the order. If the
 // request is successful the response includes orderRef, autoStartToken, qrStartToken and qrStartSecret.
-func (b *BankID) PhoneAuth(ctx context.Context, opts PhoneAuthOptions) (result phoneAuthResponse, err error) {
+func (b *BankID) PhoneAuth(ctx context.Context, opts PhoneAuthOptions) (result PhoneAuthResponse, err error) {
 	err = b.doHTTP(ctx, fmt.Sprintf("%s/rp/v6.0/phone/auth", b.url), opts, &result)
 	return
 }
@@ -263,7 +263,7 @@ type SignOptions struct {
 
 // Sign initiates an signing order. Use the collect method to query the status of the order. If the request is successful
 // the response includes orderRef, autoStartToken, qrStartToken and qrStartSecret.
-func (b *BankID) Sign(ctx context.Context, opts SignOptions) (result authSignResponse, err error) {
+func (b *BankID) Sign(ctx context.Context, opts SignOptions) (result AuthSignResponse, err error) {
 	err = b.doHTTP(ctx, fmt.Sprintf("%s/rp/v6.0/sign", b.url), opts, &result)
 	return
 }
@@ -274,103 +274,103 @@ type CollectOptions struct {
 	OrderRef string `json:"orderRef"`
 }
 
-type statusType string
+type StatusType string
 
 const (
 	// Pending is the status of a pending order and means hintCode was provided
-	Pending statusType = "pending"
+	Pending StatusType = "pending"
 
 	// Failed is the status of a failed order and means hintCode was provided
-	Failed statusType = "failed"
+	Failed StatusType = "failed"
 
 	// Complete is the status of a completed order and means completionData was provided
-	Complete statusType = "complete"
+	Complete StatusType = "complete"
 )
 
-type hintCodeType string
+type HintCodeType string
 
 // These are possible, but not exclusive hint codes. You need to handle other codes as well
 const (
 	// OutstandingTransaction Order is pending. The BankID app has not yet received the order. The hintCode will later
 	// change to noClient, started or userSign.
-	OutstandingTransaction hintCodeType = "outstandingTransaction"
+	OutstandingTransaction HintCodeType = "outstandingTransaction"
 
 	// NoClient Order is pending. The client has not yet received the order.
-	NoClient hintCodeType = "noClient"
+	NoClient HintCodeType = "noClient"
 
 	// Started Order is pending. A BankID client has launched with autostarttoken but a usable ID has not yet been found
 	// in the client. When the client launches there may be a short delay until all IDs are registered. The user may not
 	// have any usable IDs, or is yet to insert their smart card.
-	Started hintCodeType = "started"
+	Started HintCodeType = "started"
 
 	// UserMrtd Order is pending. A client has launched and received the order but additional steps for providing MRTD
 	// information is required to proceed with the order.
-	UserMrtd hintCodeType = "userMrtd"
+	UserMrtd HintCodeType = "userMrtd"
 
 	// UserCallConfirm Order is waiting for the user to confirm that they have received this order while in a call with
 	// the RP.
-	UserCallConfirm hintCodeType = "userCallConfirm"
+	UserCallConfirm HintCodeType = "userCallConfirm"
 
 	// UserSign Order is pending. The BankID client has received the order.
-	UserSign hintCodeType = "userSign"
+	UserSign HintCodeType = "userSign"
 
 	// ExpiredTransaction The order has expired. The BankID security app/program did not launch, the user did not
 	// finalize the signing or the RP called collect too late.
-	ExpiredTransaction hintCodeType = "expiredTransaction"
+	ExpiredTransaction HintCodeType = "expiredTransaction"
 
 	// CertificateErr This error is returned if:
 	// 1. The user has entered the wrong PIN code too many times. The BankID cannot be used.
 	// 2. The user’s BankID is blocked.
 	// 3. The user’s BankID is invalid.
-	CertificateErr hintCodeType = "certificateErr"
+	CertificateErr HintCodeType = "certificateErr"
 
 	// UserCancel The order was cancelled by the user. userCancel may also be returned in some rare cases related to
 	// other user interactions.
-	UserCancel hintCodeType = "userCancel"
+	UserCancel HintCodeType = "userCancel"
 
 	// Cancelled The order was cancelled. The system received a new order for the user.
-	Cancelled hintCodeType = "cancelled"
+	Cancelled HintCodeType = "cancelled"
 
 	// StartFailed The user did not provide their ID or the client did not launch within a certain time limit. Potential
 	// causes are:
 	// 1. RP did not use autoStartToken when launching the BankID security app. RP must correct this in their
 	// implementation.
 	// 2. Client software was not installed or other problem with the user’s device.
-	StartFailed hintCodeType = "startFailed"
+	StartFailed HintCodeType = "startFailed"
 )
 
-type completionDataUserType struct {
+type CompletionDataUserType struct {
 	PersonalNumber string `json:"personalNumber"`
 	Name           string `json:"name"`
 	GivenName      string `json:"givenName"`
 	Surname        string `json:"surname"`
 }
 
-type completionDataDeviceType struct {
+type CompletionDataDeviceType struct {
 	IpAddress string `json:"ipAddress"`
 	Uhi       string `json:"uhi"`
 }
 
-type completionDataType struct {
-	User            completionDataUserType   `json:"user"`
-	Device          completionDataDeviceType `json:"device"`
+type CompletionDataType struct {
+	User            CompletionDataUserType   `json:"user"`
+	Device          CompletionDataDeviceType `json:"device"`
 	BankIdIssueDate string                   `json:"bankIdIssueDate"`
 	StepUp          bool                     `json:"stepUp"`
 	Signature       string                   `json:"signature"`
 	OcspResponse    string                   `json:"ocspResponse"`
 }
 
-type collectResponse struct {
+type CollectResponse struct {
 	OrderRef       string             `json:"orderRef"`
-	Status         statusType         `json:"status"` // pending, failed, complete
-	HintCode       hintCodeType       `json:"hintCode"`
-	CompletionData completionDataType `json:"completionData"`
+	Status         StatusType         `json:"status"` // pending, failed, complete
+	HintCode       HintCodeType       `json:"hintCode"`
+	CompletionData CompletionDataType `json:"completionData"`
 }
 
 // Collect provides the result of a sign or auth order using the orderRef as reference. You should keep on calling
 // collect every two seconds as long as status indicates pending. You must abort if status indicates failed. The user
 // identity is returned when complete.
-func (b *BankID) Collect(ctx context.Context, opts CollectOptions) (result collectResponse, err error) {
+func (b *BankID) Collect(ctx context.Context, opts CollectOptions) (result CollectResponse, err error) {
 	err = b.doHTTP(ctx, fmt.Sprintf("%s/rp/v6.0/collect", b.url), opts, &result)
 	return
 }

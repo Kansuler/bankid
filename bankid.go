@@ -14,6 +14,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	pkcs12 "software.sslmate.com/src/go-pkcs12"
@@ -93,7 +94,7 @@ func New(opts Options) (*BankID, error) {
 
 	return &BankID{
 		client: client,
-		url:    opts.URL,
+		url:    strings.TrimSuffix(opts.URL, "/"),
 	}, nil
 }
 
